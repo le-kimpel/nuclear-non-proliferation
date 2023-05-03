@@ -1,6 +1,42 @@
 import numpy as np
 import pandas as pd
 from scipy.stats import permutation_test, mannwhitneyu, chisquare
+from operator import itemgetter
+
+def calc_U():
+    '''
+    Returns the U-stest statistic for a given piece of data
+    '''
+    return
+
+def partition_ranks(df):
+    '''
+    Split rankings up by severity.
+    '''
+    ranks = df['rank']
+    country = df['country_name']
+
+    total = []
+    i = 0
+    for rank in ranks:
+        total.append((country[i], rank))
+        i+=1
+
+    total = list(set(total))
+    total.sort(key=itemgetter(1), reverse=True)
+    
+    print("Highest-ranked country: " + str(total[0]))
+    print("Lowest-ranked country: " + str(total[-1:]))
+
+    # split the countries by bracket...take the top 16 versus the lower 16.
+    high_latency = []
+    low_latency = []
+    for i in range(0, 17):
+        high_latency.append(total[i][1])
+    for i in range(17, len(total)):
+        low_latency.append(total[i][1])
+
+    return high_latency, low_latency
 
 def calc_latency_rank_by_country(df):
     '''
@@ -42,11 +78,13 @@ if __name__=="__main__":
     df = pd.read_excel("Data/nl_dataset_v.1.2.xlsx")
     print(df)
 
-    df = calc_latency_rank(df)
+    df = calc_latency_rank_by_country(df)
     # compute the U-sample statistics
 
     print(df)
-    # perform permutation tests over these statistics
 
+    high_latency, low_latency = partition_ranks(df)
+    # perform permutation tests over these statistics
+    
     
     # perform chi-square tests over these statistics 
