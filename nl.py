@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.stats import permutation_test, manwhitneyu, chisquare
+from scipy.stats import permutation_test, mannwhitneyu, chisquare
 
 def calc_latency_rank(df):
     '''
@@ -15,7 +15,7 @@ def calc_latency_rank(df):
     return 
 
 if __name__=="__main__":
-    df = pd.read_excel("nl_dataset_v.1.2.xlsx")
+    df = pd.read_excel("Data/nl_dataset_v.1.2.xlsx")
     print(df)
 
 
