@@ -3,11 +3,11 @@ import pandas as pd
 from scipy.stats import permutation_test, mannwhitneyu, chisquare
 from operator import itemgetter
 
-def calc_U():
+def statistic(hdata, ldata):
     '''
     Returns the U-stest statistic for a given piece of data
     '''
-    return
+    return mannwhitneyu(hdata, ldata)
 
 def partition_ranks(df):
     '''
@@ -31,10 +31,10 @@ def partition_ranks(df):
     # split the countries by bracket...take the top 16 versus the lower 16.
     high_latency = []
     low_latency = []
-    for i in range(0, 17):
-        high_latency.append(total[i][1])
-    for i in range(17, len(total)):
-        low_latency.append(total[i][1])
+    for i in range(0, 16):
+        high_latency.append(total[i])
+    for i in range(16, len(total)):
+        low_latency.append(total[i])
 
     return high_latency, low_latency
 
@@ -79,12 +79,43 @@ if __name__=="__main__":
     print(df)
 
     df = calc_latency_rank_by_country(df)
-    # compute the U-sample statistics
 
     print(df)
 
     high_latency, low_latency = partition_ranks(df)
-    # perform permutation tests over these statistics
-    
-    
-    # perform chi-square tests over these statistics 
+    print("High Latency: " + str(high_latency))
+    print("Low Latency: " + str(low_latency))
+
+    hdata = []
+    ldata = []
+
+    # compute 2-sample U statistics over this data.
+    H = [high[0] for high in high_latency]
+    L = [low[0] for low in low_latency]
+
+    df = df.replace(np.nan, -1)
+    for i in range(0, df.shape[0]):
+        row = df.iloc[i]
+        if row[0] in H:
+            hdata.append(np.array(row[3:], dtype=int))
+        elif row[0] in L:
+            ldata.append(np.array(row[3:], dtype=int))
+
+    # now perform a permutation test over some data and the U statistic
+    # Let's compare the top 5 highest-ranked countries and the lowest-ranked 5 countries.
+    highest = H[:5]
+    lowest = L[-5:]
+
+    PERM_RESULTS = []
+    i = 0
+    j = 0
+    for country in highest:
+        A = hdata[i]
+        for country2 in lowest:
+            B = ldata[j]
+            D = np.array([A,B])
+            perm_statistic = permutation_test(D, statistic)
+            j+=1
+        i+=1
+    print(highest)
+    print(lowest)
