@@ -7,7 +7,7 @@ def statistic(hdata, ldata):
     '''
     Returns the U-stest statistic for a given piece of data
     '''
-    return mannwhitneyu(hdata, ldata)
+    return mannwhitneyu(hdata, ldata)[0]
 
 def partition_ranks(df):
     '''
@@ -76,11 +76,7 @@ def calc_latency_rank_by_country(df):
 
 if __name__=="__main__":
     df = pd.read_excel("Data/nl_dataset_v.1.2.xlsx")
-    print(df)
-
     df = calc_latency_rank_by_country(df)
-
-    print(df)
 
     high_latency, low_latency = partition_ranks(df)
     print("High Latency: " + str(high_latency))
@@ -109,13 +105,14 @@ if __name__=="__main__":
     PERM_RESULTS = []
     i = 0
     j = 0
-    for country in highest:
+    for i in range(0,len(highest)):
         A = hdata[i]
-        for country2 in lowest:
+        for j in range(0,len(lowest)):
             B = ldata[j]
             D = np.array([A,B])
             perm_statistic = permutation_test(D, statistic)
-            j+=1
-        i+=1
-    print(highest)
-    print(lowest)
+        PERM_RESULTS.append(perm_statistic)
+
+    print(PERM_RESULTS)
+ 
+    
