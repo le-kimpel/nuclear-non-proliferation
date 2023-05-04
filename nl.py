@@ -102,6 +102,13 @@ if __name__=="__main__":
     highest = H[:5]
     lowest = L[-5:]
 
+    u = np.array(mannwhitneyu(hdata, ldata))
+    lowu = len(hdata) * len(ldata) - u
+    print("U-test statistic (low latency): " + str(lowu)) 
+    print("U-test statistic: " + str(u[0]))
+
+    print("p-values: " + str(u[1]))
+    
     PERM_RESULTS = []
     i = 0
     j = 0
@@ -114,5 +121,7 @@ if __name__=="__main__":
         PERM_RESULTS.append(perm_statistic)
 
     print(PERM_RESULTS)
+    for stat in PERM_RESULTS:
+        print(stat)
  
     
