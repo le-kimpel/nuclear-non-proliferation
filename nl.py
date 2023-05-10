@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+import random
+import matplotlib.pyplot as plt
+from sklearn import ensemble
 from scipy.stats import permutation_test, mannwhitneyu, chisquare
 from operator import itemgetter
 
@@ -89,6 +92,9 @@ if __name__=="__main__":
     H = [high[0] for high in high_latency]
     L = [low[0] for low in low_latency]
 
+    h = [high[1] for high in high_latency]
+    l = [low[1] for low in low_latency]
+    
     df = df.replace(np.nan, -1)
     for i in range(0, df.shape[0]):
         row = df.iloc[i]
@@ -96,32 +102,75 @@ if __name__=="__main__":
             hdata.append(np.array(row[3:], dtype=int))
         elif row[0] in L:
             ldata.append(np.array(row[3:], dtype=int))
-
+  
+    # plot these
+    #plt.bar(L, l)
+    #plt.bar(H, h)
+    #plt.show()
+    
     # now perform a permutation test over some data and the U statistic
-    # Let's compare the top 5 highest-ranked countries and the lowest-ranked 5 countries.
-    highest = H[:5]
-    lowest = L[-5:]
-
-    u = np.array(mannwhitneyu(hdata, ldata))
-    lowu = len(hdata) * len(ldata) - u
-    print("U-test statistic (low latency): " + str(lowu)) 
-    print("U-test statistic: " + str(u[0]))
-
-    print("p-values: " + str(u[1]))
+    print(len(H))
+    print(len(hdata))
     
-    PERM_RESULTS = []
-    i = 0
-    j = 0
-    for i in range(0,len(highest)):
-        A = hdata[i]
-        for j in range(0,len(lowest)):
-            B = ldata[j]
-            D = np.array([A,B])
+    # split up the highly-ranked data and do a pairwise comparison
+    '''
+    H_PERM_RESULTS = {}
+    for i in range(0,len(H)):
+        h1 = hdata[i]
+        c1 = H[i]
+        temp = []
+        print(c1)
+        for j in range(0,len(H)):
+            c2 = H[j]
+            h2 = hdata[j]
+            D = np.array([h1, h2])
             perm_statistic = permutation_test(D, statistic)
-        PERM_RESULTS.append(perm_statistic)
-
-    print(PERM_RESULTS)
-    for stat in PERM_RESULTS:
-        print(stat)
- 
+            print("Country: " + str(c2) + " " + str(perm_statistic.pvalue))
+            temp.append(perm_statistic.pvalue)
+            # get the lowest p-value in the comparison
+            min_p = min(temp)
+            max_p = max(temp)
+            H_PERM_RESULTS[c1] = (min_p, max_p)
+    print(H_PERM_RESULTS)    
     
+    L_PERM_RESULTS = {}
+    for i in range(0,len(L)):
+        l1 = ldata[i]
+        c1 = L[i]
+        temp = []
+        print(c1)
+        for j in range(0,len(L)):
+            c2 = L[j]
+            l2 = ldata[j]
+            D = np.array([l1, l2])
+            perm_statistic = permutation_test(D, statistic)
+            print("Country: " + str(c2) + " " + str(perm_statistic.pvalue))
+            temp.append(perm_statistic.pvalue)
+            # get the lowest p-value in the comparison
+            min_p = min(temp)
+            max_p = max(temp)
+            L_PERM_RESULTS[c1] = (min_p, max_p)
+    print(L_PERM_RESULTS)    
+    
+    # Let's compare pairs from each distribution.
+    for i in range(0, len(H)):
+        h1 = hdata[i]
+        c1 = H[i]
+        print(c1)
+        for j in range(0, len(L)):
+            c2 = L[j]
+            l2 = ldata[j]
+            D = np.array([h1, l2])
+            perm_statistic = permutation_test(D, statistic)
+            print("Country: " + str(c2) + " " + str(perm_statistic.pvalue))
+     '''
+    
+    # now split the data into a train-test set and build the classifier
+    df = df[3:]
+    indx = random.randint(0, df.shape[0])
+    test = df.index[indx]
+    X = df.drop(test)
+    y = X.loc[0,:].to_numpy().reshape(1,-1)
+    clf = ensemble.RandomForestClassifier(n_estimators=100, criterion="entropy", random_state=0)
+    clf.fit(X,y)
+    clf.predict(test)
